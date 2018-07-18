@@ -159,7 +159,7 @@ def event_handler():
 
 
 def draw_text(surface, text, coord=(0, 0)):
-    font = pg.font.Font(r'C:\Users\Hyogun\PycharmProjects\Game_Making\Menlo-Regular.ttf', 32)
+    font = pg.font.Font('Menlo-Regular.ttf', 32)
     textSurface = font.render(text, True, BLACK, WHITE)
     textRect = textSurface.get_rect()
     textRect.center = coord
