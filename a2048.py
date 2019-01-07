@@ -4,6 +4,8 @@ from pygame.locals import *
 from pygame import gfxdraw
 
 
+GAME_TITLE = '2048 by Haawron'
+
 up    = 0
 down  = 1
 left  = 2
@@ -15,11 +17,13 @@ WINDOW_HEIGHT   = 700
 PLAIN_MARGIN    = 60  # 좌/우/하단 마진, 4의 배수
 NUMBLOCK_MARGIN = 10
 
-PLAIN_WIDTH  = PLAIN_HEIGHT = WINDOW_WIDTH - 2 * PLAIN_MARGIN
-OBJSIZE      = PLAIN_WIDTH // 4 - 2 * NUMBLOCK_MARGIN  # size of number boxes in pixels
-UPPER_MARGIN = WINDOW_HEIGHT - PLAIN_HEIGHT - PLAIN_MARGIN
+PLAIN_SIZE   = WINDOW_WIDTH - 2 * PLAIN_MARGIN
+OBJSIZE      = PLAIN_SIZE // 4 - 2 * NUMBLOCK_MARGIN  # size of number boxes in pixels
+UPPER_MARGIN = WINDOW_HEIGHT - PLAIN_SIZE - PLAIN_MARGIN
 
 WHITE = (0, 0, 0)
+
+COLOR_BG = None
 
 
 ############################################################################
@@ -133,6 +137,8 @@ class NumBlock(pg.sprite.Sprite):
         textSurface = font.render(num, True, WHITE, None)
         textRect = textSurface.get_rect()
         textRect.center = self.rect.center
+        self.image.blit(textSurface, textRect)  # 이미지 위에 텍스트 올림
+        ### 진짜 화면 위에 올라가는 건 pg.display.update할 때!!
 
     def move(self, direction):
         self.animator.move(self.rect, direction)
@@ -140,4 +146,25 @@ class NumBlock(pg.sprite.Sprite):
     def draw(self):
         # Group.draw가 sprite.draw를 쓰는가?
         # 쓰는거면 걍 오버라이딩하면 댐
+        # Group.draw(surface)하면 for surface.blit(sprite_of_Group.image, )함
+        # 그럼 이 메소드는 필요가 없자나?
+        # 나 왜 이 메소드 만들라 했지?
+        # todo : 아 텍스트가 이미지 위에 올라가 있으면 되겠다.
+
+        # blit은 이미지(pg.Surface)위에 이미지를 올리는 작업이다.
         pass
+
+
+def main():
+
+    ########################################################################
+    global FPSCLOCK, DISPLAYSURF  # 그냥 전역 변수 선언
+    pg.init()
+    FPSCLOCK = pg.time.Clock()
+    DISPLAYSURF = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    pg.display.set_caption(GAME_TITLE)
+    DISPLAYSURF.fill(COLOR_BG)
+    ########################################################################
+
+    plain_surf = pg.Surface((PLAIN_SIZE, PLAIN_SIZE))
+    
