@@ -3,9 +3,9 @@ from pygame.locals import *
 import random
 import sys
 
-FPS = 60  # frames per second, the general speed of the program
+FPS = 60  # overall speed of the game
 WINDOWWIDTH = 560  # size of window's width in pixels
-WINDOWHEIGHT = 700  # size of windows' height in pixels
+WINDOWHEIGHT = 700  # size of window's height in pixels
 OBJSIZE = 30  # size of objects in pixels
 
 # colors
@@ -22,10 +22,10 @@ COLOR_PLAYER = BLACK
 class Const:
     G = 1512.6  # gravitational acc in pixels
     mu = .8  # sliding friction factor
-    # mass = 10.  # effect on sliding friction
-    acc = 2062.7  # player acc in pixels
-    p = 1 / 15000  # initial poo generating prob
-    p_update_rate = 1.35  # p will be updated every 10 seconds
+    # mass = 10.  # affects sliding friction
+    acc = 2062.7  # nominal player acc in pixels
+    p = 1 / 15000  # initial poo generating prob: grows every 10 seconds
+    p_update_rate = 1.35  # growing rate of p
 
 
 class PhysicalEngine:
@@ -58,7 +58,6 @@ class PhysicalEngine:
         self.__store()
         if self.vx != 0:
             self.vx -= self.prev_vx / abs(self.prev_vx) * Const.mu * Const.G * self.dt
-        # friction cannot change the direction of the object
         if self.prev_vx * self.vx < 0:
             self.vx = 0.
             self.STOP_WHILE_MOVING = True
@@ -174,7 +173,7 @@ def main():
 
         draw_text(DISPLAYSURF, 'Score : {}'.format(score), (100, 30))
 
-        # new poo on every top pixel
+        # generating poos
         for x in range(WINDOWWIDTH):
             if random.random() < p:
                 poo = Block(BLACK, (x, 0))
@@ -183,7 +182,7 @@ def main():
 
         all_sprites_list.draw(DISPLAYSURF)
 
-        # update p at every 10 seconds
+        # update p every 10 seconds
         if frame_count % (FPS * 10) == 0:
             p *= Const.p_update_rate
 
@@ -194,29 +193,22 @@ def main():
                 poo.kill()
                 score += 1
 
-        # key down event handling
+        # keydown event handling
         pressed = pg.key.get_pressed()
         # if not all(a == 0 for a in pressed):
         if any(pressed):
-
             if pressed[K_RIGHT]:
-                # "accelerate" to right
                 player.move_right()
-
             elif pressed[K_LEFT]:
-                # "accelerate" to left
                 player.move_left()
-
             elif pressed[K_NUMLOCK]:
                 player.stay()
-
         else:
             # "decelerate"
             player.stay()
 
-        # event handling
+        # special key event handling
         for event in pg.event.get():
-
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
                 pg.quit()
                 sys.exit()
