@@ -14,8 +14,17 @@ WINDOWHEIGHT = 700
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-BLUE = (66, 135, 245)
 YELLOW = (255, 255, 0)
+# BLUE = (66, 135, 245)
+BLOCK_COLORS = [
+    (173, 222, 197),
+    (66, 135, 245),
+    (255, 188, 66),
+    (216, 17, 89),
+    (1, 25, 54),
+]
+# other option
+# 97DFFC, 858AE3, 613DC1, 4E148C, 2C0735
 
 LEFT = 1  # left mouse button
 RIGHT = 3  # right
@@ -51,16 +60,18 @@ class Ball(pg.sprite.Sprite):  # need to implement image, rect, update
     def launch(self, theta):  # theta in rad
         self.vx, self.vy = self.v0*np.cos(theta), -self.v0*np.sin(theta)
         self.stopped = False
-    def bounce_off(self, blocks):
+    def bounce_off(self, hit_block_list):
         convert_x, convert_y = False, False
-        rect = self.rect
-        for block in blocks:  # at most 2
-            brect = block.rect
-            # converting vx/vy in this loop could convert sign twice
-            if rect.centerx < brect.left or rect.centerx > brect.right:
-                convert_x = True
-            if rect.centery < brect.top or rect.centery > brect.bottom:
+        cx, cy = self.rect.center
+        for block in hit_block_list:
+            right, top = block.rect.topright
+            left, bottom = block.rect.bottomleft
+            dl, dr = cx - left, cx - right
+            db, dt = cy - bottom, cy - top
+            if (dr <= -dt and dl >= dt) or (dl >= -db and dr <= db):
                 convert_y = True
+            elif (dr + dt) * (dl - dt) >= 0:
+                convert_x = True
         if convert_x:
             self.vx = -self.vx
             self.move(self.vx, 0)
@@ -101,7 +112,7 @@ class Block(pg.sprite.Sprite):
         self.text_rect = self.text_surface.get_rect()
         self.text_rect.center = self.w//2, self.h//2
         
-        pg.draw.rect(self.image, BLUE, [0, 0, self.w, self.h])
+        pg.draw.rect(self.image, BLOCK_COLORS[self.count//30], [0, 0, self.w, self.h])
         pg.draw.rect(self.image, WHITE, [0, 0, self.w, self.h], 1)
         self.image.blit(self.text_surface, self.text_rect)
 
@@ -111,7 +122,6 @@ class Block(pg.sprite.Sprite):
             global score
             score += 1
             if self.count == 0:
-                print([block.rect.left for block in blocks])
                 for group in self.groups():
                     group.remove(self)
                 self.kill()
